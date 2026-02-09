@@ -1,0 +1,697 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Zamzam Visits</title>
+    <link rel="icon" type="image/png" href="assets/zamzam-logo-transparent.png?v=20260205" />
+    <link rel="manifest" href="manifest.webmanifest?v=20260206b" />
+    <meta name="theme-color" content="#5d5146" />
+    <link rel="apple-touch-icon" href="assets/zamzam-icon-192.png?v=20260205" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500;600;700&family=Sora:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="styles.css?v=20260206b" />
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+    <script src="config.js?v=20260205"></script>
+    <script defer src="app.js?v=20260205ay"></script>
+  </head>
+  <body>
+    <div class="app" id="app-root">
+      <section id="login-view" class="view">
+        <div class="login-card">
+          <div class="login-hero">
+            <div class="login-logo-wrap">
+              <img
+                class="login-logo"
+                src="assets/zamzam-logo-transparent.png"
+                alt="Zamzam Logo"
+              />
+            </div>
+            <h1>Zamzam Visits</h1>
+            <p class="login-subtitle">Storming In Business!</p>
+          </div>
+          <form id="login-form" class="form">
+            <div class="field">
+              <label for="login-email">Email</label>
+              <input id="login-email" type="email" placeholder="you@zamzam.global" required />
+            </div>
+            <div class="field">
+              <label for="login-password">Password</label>
+              <input id="login-password" type="password" placeholder="Enter your password" required />
+            </div>
+            <button type="submit" class="btn primary">Login</button>
+            <div id="login-error" class="form-error hidden"></div>
+          </form>
+          <div class="install-prompt hidden" data-install-prompt>
+            <div>
+              <div class="install-title">Install Zamzam Visits</div>
+              <div class="install-subtitle">Add the app to your home screen.</div>
+            </div>
+            <button type="button" class="btn ghost small install-btn">Install</button>
+          </div>
+          <div class="login-footer">
+            <span class="powered-label">Powered by</span>
+            <img class="powered-logo" src="assets/ami-logo-transparent.png" alt="AMI logo" />
+          </div>
+        </div>
+      </section>
+
+      <section id="app-view" class="view hidden">
+        <aside class="sidebar">
+          <div class="sidebar-header">
+            <div class="brand">
+              <img class="brand-logo" src="assets/zamzam-logo-transparent.png" alt="Zamzam Logo" />
+              <div>
+                <h2>Zamzam Visits</h2>
+                <p class="brand-tagline" id="brand-welcome">Welcome</p>
+              </div>
+            </div>
+          </div>
+          <nav class="nav">
+            <button class="nav-link" data-section="sales-dashboard" data-role="salesperson">
+              Dashboard
+            </button>
+            <button class="nav-link" data-section="sales-new" data-role="salesperson">
+              New
+            </button>
+            <button class="nav-link" data-section="sales-route" data-role="salesperson">
+              Route Tomorrow
+            </button>
+            <button class="nav-link" data-section="sales-visits" data-role="salesperson">
+              My Visits
+            </button>
+            <button class="nav-link" data-section="admin-dashboard" data-role="admin">
+              Dashboard
+            </button>
+            <button class="nav-link" data-section="admin-users" data-role="admin">Users</button>
+          </nav>
+          <div class="sidebar-footer">
+            <button id="logout-btn" class="btn ghost">Log out</button>
+            <div class="install-prompt hidden" data-install-prompt>
+              <div>
+                <div class="install-title">Install App</div>
+                <div class="install-subtitle">Add to home screen</div>
+              </div>
+              <button type="button" class="btn ghost small install-btn">Install</button>
+            </div>
+            <div class="sidebar-status">
+              <div class="pill" id="today-label">Today</div>
+            </div>
+          </div>
+        </aside>
+
+        <main class="content">
+          <header class="content-header hidden" id="content-header">
+            <div>
+              <h1 id="view-title">Dashboard</h1>
+            </div>
+            <div class="header-actions hidden" id="sales-quick-actions" data-role="salesperson">
+              <button class="btn ghost small quick-action" data-section="sales-new">
+                New Visit
+              </button>
+              <button class="btn ghost small quick-action" data-section="sales-route">
+                Route Tomorrow
+              </button>
+              <button class="btn ghost small quick-action" data-section="sales-visits">
+                My Visits
+              </button>
+            </div>
+          </header>
+
+          <section id="sales-dashboard" class="panel hidden">
+            <div class="stat-grid" id="sales-stats">
+              <div class="stat-card">
+                <div class="stat-label">Total Visits</div>
+                <div class="stat-value" data-stat="sales-total">0</div>
+              </div>
+              <div class="stat-card">
+                <div class="stat-label">This Month</div>
+                <div class="stat-value" data-stat="sales-month">0</div>
+              </div>
+              <div class="stat-card">
+                <div class="stat-label">Follow Ups</div>
+                <div class="stat-value" data-stat="sales-followups">0</div>
+              </div>
+              <div class="stat-card">
+                <div class="stat-label">Due Next 7 Days</div>
+                <div class="stat-value" data-stat="sales-next7">0</div>
+              </div>
+            </div>
+            <div class="card">
+              <div class="card-header">
+                <h3>Tomorrow's Visits</h3>
+                <span class="badge ghost" id="sales-tomorrow-count">0</span>
+              </div>
+              <ul class="simple-list" id="sales-tomorrow-list"></ul>
+            </div>
+          </section>
+
+          <section id="sales-new" class="panel hidden">
+            <div class="grid-1">
+              <div class="card">
+                <div class="card-header">
+                  <h3>New Visit</h3>
+                  <span class="badge">Required</span>
+                </div>
+                <form id="visit-form" class="form">
+                  <div class="gps-box">
+                    <div class="gps-header">
+                      <div>
+                        <div class="gps-title">GPS Location</div>
+                        <div class="gps-meta" id="gps-coords">Not captured yet.</div>
+                      </div>
+                      <button id="gps-refresh" type="button" class="btn ghost small recapture">
+                        Recapture
+                      </button>
+                    </div>
+                    <div class="gps-note" id="gps-accuracy">Accuracy: -</div>
+                  </div>
+                  <div class="field">
+                    <label for="customer-name">Customer Name</label>
+                    <input id="customer-name" type="text" placeholder="Customer name" required />
+                  </div>
+                  <div class="field">
+                    <label for="phone-number">Phone Number</label>
+                    <div class="input-prefix">
+                      <span>+968</span>
+                      <input
+                        id="phone-number"
+                        type="text"
+                        inputmode="numeric"
+                        pattern="[0-9]{8}"
+                        maxlength="8"
+                        placeholder="8 digits"
+                        required
+                      />
+                    </div>
+                  </div>
+                  <div class="field">
+                    <label for="cr-number">CR Number</label>
+                    <input
+                      id="cr-number"
+                      type="text"
+                      inputmode="numeric"
+                      pattern="[0-9]{7}"
+                      maxlength="7"
+                      placeholder="7 digits"
+                      required
+                    />
+                  </div>
+                  <div class="field">
+                    <label for="area">Area</label>
+                    <input id="area" type="text" placeholder="Customer area" required />
+                  </div>
+                  <div class="field">
+                    <label for="visit-date">Visit Date</label>
+                    <input id="visit-date" type="date" required />
+                  </div>
+                  <div class="field">
+                    <label for="next-visit-date">Next Visit Date</label>
+                    <input id="next-visit-date" type="date" />
+                  </div>
+                  <div class="field">
+                    <label for="have-zamzam">Have Zamzam</label>
+                    <select id="have-zamzam" required>
+                      <option value="">Select</option>
+                      <option value="yes">Yes</option>
+                      <option value="no">No</option>
+                    </select>
+                  </div>
+                  <div class="field hidden" id="zamzam-photo-field">
+                    <label for="zamzam-photo">Zamzam Photo</label>
+                    <input id="zamzam-photo" type="file" accept="image/*" />
+                    <div class="helper-text">Required when Have Zamzam is Yes.</div>
+                  </div>
+                  <div class="field">
+                    <label for="visit-notes">Quick Notes</label>
+                    <textarea
+                      id="visit-notes"
+                      rows="3"
+                      maxlength="500"
+                      placeholder="Short notes about the visit (optional)"
+                    ></textarea>
+                  </div>
+                  <div class="gps-status" id="gps-status">GPS will be captured on submission.</div>
+                  <button type="submit" class="btn primary">Submit Visit</button>
+                  <div id="visit-error" class="form-error hidden"></div>
+                </form>
+              </div>
+            </div>
+          </section>
+
+          <section id="sales-route" class="panel hidden">
+            <div class="card">
+              <div class="card-header">
+                <h3>Route Tomorrow</h3>
+                <div class="card-actions">
+                  <button id="sales-route-btn" type="button" class="btn route-special small">
+                    Generate Route
+                  </button>
+                  <span class="badge status-off" id="route-location-status">Location: Off</span>
+                </div>
+              </div>
+              <div class="helper-text">
+                Generate a Google Maps route starting from your current location with tomorrow's visits.
+              </div>
+              <div class="route-box">
+                <div class="route-header">
+                  <div>
+                    <div class="route-title">Start Location</div>
+                    <div class="route-meta" id="route-start-coords">Not captured yet.</div>
+                  </div>
+                  <div class="route-actions">
+                    <button id="route-recapture" type="button" class="btn ghost small recapture">
+                      Recapture
+                    </button>
+                  </div>
+                </div>
+                <div class="route-note" id="route-accuracy">Accuracy: -</div>
+              </div>
+              <div class="route-summary">
+                <span class="badge ghost" id="route-visits-count">Tomorrow Visits: 0</span>
+              </div>
+              <div class="table-wrapper">
+                <table class="data-table">
+                  <thead>
+                    <tr>
+                      <th>Customer</th>
+                      <th>Area</th>
+                      <th>Scheduled</th>
+                      <th>GPS</th>
+                      <th>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody id="route-visits-body">
+                    <tr>
+                      <td colspan="5" class="empty">No visits for tomorrow.</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </section>
+
+          <section id="sales-visits" class="panel hidden">
+              <div class="card">
+              <div class="card-header">
+                <h3>My Visits</h3>
+                <div class="card-actions">
+                  <button id="sales-export" type="button" class="btn ghost small">Export CSV</button>
+                  <button id="sales-export-pdf" type="button" class="btn ghost small">Export PDF</button>
+                </div>
+              </div>
+              <form id="sales-filter-form" class="filters">
+                <div class="field">
+                  <label for="sales-date-from">From</label>
+                  <input id="sales-date-from" type="date" />
+                </div>
+                <div class="field">
+                  <label for="sales-date-to">To</label>
+                  <input id="sales-date-to" type="date" />
+                </div>
+                <div class="field">
+                  <label for="sales-area-filter">Area</label>
+                  <input id="sales-area-filter" type="text" placeholder="Any area" />
+                </div>
+                <div class="field">
+                  <label for="sales-search">Search</label>
+                  <input id="sales-search" type="text" placeholder="Customer, CR, area" />
+                </div>
+                <div class="field">
+                  <label for="sales-have-zamzam">Have Zamzam</label>
+                  <select id="sales-have-zamzam">
+                    <option value="">All</option>
+                    <option value="yes">Yes</option>
+                    <option value="no">No</option>
+                  </select>
+                </div>
+                <div class="filter-actions">
+                  <button type="submit" class="btn secondary">Apply</button>
+                  <button type="button" class="btn ghost" data-reset="sales">Reset</button>
+                </div>
+              </form>
+              <div class="table-wrapper">
+                  <table class="data-table">
+                    <thead>
+                      <tr>
+                        <th>Customer</th>
+                        <th>Area</th>
+                        <th>Visit Date</th>
+                        <th>Next Visit</th>
+                        <th>Have Zamzam</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody id="sales-visits-body">
+                      <tr>
+                        <td colspan="7" class="empty">No visits yet.</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+          </section>
+
+          <section id="admin-dashboard" class="panel hidden">
+            <div class="stat-grid" id="admin-stats">
+              <div class="stat-card">
+                <div class="stat-label">Total Visits</div>
+                <div class="stat-value" data-stat="admin-total">0</div>
+              </div>
+              <div class="stat-card">
+                <div class="stat-label">This Month</div>
+                <div class="stat-value" data-stat="admin-month">0</div>
+              </div>
+              <div class="stat-card">
+                <div class="stat-label">Follow Ups</div>
+                <div class="stat-value" data-stat="admin-followups">0</div>
+              </div>
+              <div class="stat-card">
+                <div class="stat-label">Due Next 7 Days</div>
+                <div class="stat-value" data-stat="admin-next7">0</div>
+              </div>
+            </div>
+            <div class="grid-1">
+              <div class="card">
+                <div class="card-header">
+                  <h3>Salesperson Leaderboard</h3>
+                  <span class="badge ghost">This Week</span>
+                </div>
+                <div class="table-wrapper">
+                  <table class="data-table">
+                    <thead>
+                      <tr>
+                        <th>Salesperson</th>
+                        <th>Visits</th>
+                        <th>Completion</th>
+                      </tr>
+                    </thead>
+                    <tbody id="admin-leaderboard-body">
+                      <tr>
+                        <td colspan="3" class="empty">No data yet.</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+            <div class="card">
+              <div class="card-header">
+                <h3>All Visits</h3>
+                <div class="card-actions">
+                  <button id="admin-export" type="button" class="btn ghost small">Export CSV</button>
+                  <button id="admin-export-pdf" type="button" class="btn ghost small">Export PDF</button>
+                  <span class="badge">Admin</span>
+                </div>
+              </div>
+              <form id="admin-filter-form" class="filters">
+                <div class="field">
+                  <label for="admin-date-from">From</label>
+                  <input id="admin-date-from" type="date" />
+                </div>
+                <div class="field">
+                  <label for="admin-date-to">To</label>
+                  <input id="admin-date-to" type="date" />
+                </div>
+                <div class="field">
+                  <label for="admin-area-filter">Area</label>
+                  <input id="admin-area-filter" type="text" placeholder="Any area" />
+                </div>
+                <div class="field">
+                  <label for="admin-salesperson-filter">Salesperson</label>
+                  <select id="admin-salesperson-filter">
+                    <option value="">All</option>
+                  </select>
+                </div>
+                <div class="field">
+                  <label for="admin-search">Search</label>
+                  <input id="admin-search" type="text" placeholder="Customer, CR, area" />
+                </div>
+                <div class="field">
+                  <label for="admin-status-filter">Route Status</label>
+                  <select id="admin-status-filter">
+                    <option value="">All</option>
+                    <option value="active">Active</option>
+                    <option value="complete">Completed</option>
+                    <option value="move">Moved +7d</option>
+                  </select>
+                </div>
+                <div class="field">
+                  <label for="admin-have-zamzam">Have Zamzam</label>
+                  <select id="admin-have-zamzam">
+                    <option value="">All</option>
+                    <option value="yes">Yes</option>
+                    <option value="no">No</option>
+                  </select>
+                </div>
+                <div class="filter-actions">
+                  <button type="submit" class="btn secondary">Apply</button>
+                  <button type="button" class="btn ghost" data-reset="admin">Reset</button>
+                </div>
+              </form>
+              <div class="bulk-toolbar" id="admin-bulk-toolbar">
+                <div class="bulk-select">
+                  <label class="check">
+                    <input id="admin-select-all" type="checkbox" />
+                    <span>Select All</span>
+                  </label>
+                  <span class="bulk-count" id="admin-bulk-count">0 selected</span>
+                </div>
+                <div class="bulk-fields">
+                  <div class="field">
+                    <label for="bulk-visit-date">Visit Date</label>
+                    <input id="bulk-visit-date" type="date" />
+                  </div>
+                  <div class="field">
+                    <label for="bulk-next-visit-date">Next Visit Date</label>
+                    <input id="bulk-next-visit-date" type="date" />
+                  </div>
+                  <button id="bulk-update-dates" type="button" class="btn secondary small">
+                    Update Dates
+                  </button>
+                  <button id="bulk-clear-route" type="button" class="btn ghost small">
+                    Clear Status
+                  </button>
+                  <button id="bulk-clear-selection" type="button" class="btn ghost small">
+                    Clear Selection
+                  </button>
+                </div>
+              </div>
+              <div class="table-wrapper">
+                <table class="data-table">
+                  <thead>
+                    <tr>
+                      <th>Select</th>
+                      <th>Customer</th>
+                      <th>Salesperson</th>
+                      <th>Area</th>
+                      <th>Visit Date</th>
+                      <th>Next Visit</th>
+                      <th>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody id="admin-visits-body">
+                    <tr>
+                      <td colspan="7" class="empty">No visits found.</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </section>
+
+          <section id="admin-users" class="panel hidden">
+            <div class="grid-2">
+              <div class="card">
+                <div class="card-header">
+                  <h3>Create User</h3>
+                  <span class="badge ghost">Admin only</span>
+                </div>
+                <form id="admin-create-form" class="form">
+                  <div class="field">
+                    <label for="admin-create-name">Full Name</label>
+                    <input id="admin-create-name" type="text" placeholder="User name" required />
+                  </div>
+                  <div class="field">
+                    <label for="admin-create-email">Email</label>
+                    <input id="admin-create-email" type="email" placeholder="user@example.com" required />
+                  </div>
+                  <div class="field">
+                    <label for="admin-create-password">Temporary Password</label>
+                    <input
+                      id="admin-create-password"
+                      type="password"
+                      minlength="6"
+                      placeholder="At least 6 characters"
+                      required
+                    />
+                  </div>
+                  <div class="field">
+                    <label for="admin-create-role">Role</label>
+                    <select id="admin-create-role">
+                      <option value="salesperson">Salesperson</option>
+                      <option value="admin">Admin</option>
+                    </select>
+                  </div>
+                  <button id="admin-create-submit" type="submit" class="btn primary">
+                    Create User
+                  </button>
+                  <div id="admin-create-error" class="form-error hidden"></div>
+                </form>
+              </div>
+
+              <div class="card">
+                <div class="card-header">
+                  <h3>Users</h3>
+                  <span class="badge">Admin</span>
+                </div>
+                <div class="table-wrapper">
+                  <table class="data-table">
+                    <thead>
+                      <tr>
+                        <th>Name</th>
+                        <th>Role</th>
+                        <th>User ID</th>
+                        <th>Created</th>
+                      </tr>
+                    </thead>
+                    <tbody id="admin-users-body">
+                      <tr>
+                        <td colspan="4" class="empty">No users found.</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </section>
+        </main>
+      </section>
+    </div>
+
+    <div id="toast" class="toast hidden"></div>
+
+    <div id="visit-modal" class="modal hidden" aria-hidden="true">
+        <div class="modal-card">
+          <div class="modal-header">
+            <h3 id="modal-title">Visit Details</h3>
+          </div>
+        <form id="edit-visit-form" class="form">
+          <div class="grid-2">
+            <div class="field">
+              <label for="edit-customer-name">Customer Name</label>
+              <input id="edit-customer-name" type="text" required />
+            </div>
+            <div class="field">
+              <label for="edit-phone-number">Phone Number</label>
+              <div class="input-prefix">
+                <span>+968</span>
+                <input
+                  id="edit-phone-number"
+                  type="text"
+                  inputmode="numeric"
+                  pattern="[0-9]{8}"
+                  maxlength="8"
+                  required
+                />
+              </div>
+              <div class="field-actions">
+                <a
+                  id="call-phone"
+                  class="btn call small"
+                  href="#"
+                  target="_blank"
+                  rel="noopener"
+                  aria-disabled="true"
+                >
+                  Call Customer
+                </a>
+                <a
+                  id="whatsapp-link"
+                  class="btn whatsapp small"
+                  href="#"
+                  target="_blank"
+                  rel="noopener"
+                  aria-disabled="true"
+                >
+                  WhatsApp
+                </a>
+              </div>
+            </div>
+            <div class="field">
+              <label for="edit-cr-number">CR Number</label>
+              <input
+                id="edit-cr-number"
+                type="text"
+                inputmode="numeric"
+                pattern="[0-9]{7}"
+                maxlength="7"
+                required
+              />
+            </div>
+            <div class="field">
+              <label for="edit-area">Area</label>
+              <input id="edit-area" type="text" required />
+            </div>
+            <div class="field">
+              <label for="edit-visit-date">Visit Date</label>
+              <input id="edit-visit-date" type="date" required />
+            </div>
+            <div class="field">
+              <label for="edit-next-visit-date">Next Visit Date</label>
+              <input id="edit-next-visit-date" type="date" />
+            </div>
+            <div class="field">
+              <label for="edit-have-zamzam">Have Zamzam</label>
+              <select id="edit-have-zamzam" required>
+                <option value="yes">Yes</option>
+                <option value="no">No</option>
+              </select>
+            </div>
+            <div class="field full">
+              <label for="edit-location">Location (Lat, Long)</label>
+              <input
+                id="edit-location"
+                type="text"
+                placeholder="24.47, 56.54"
+                required
+              />
+              <div class="location-actions">
+                <a
+                  id="location-map"
+                  class="btn map small"
+                  href="#"
+                  target="_blank"
+                  rel="noopener"
+                  aria-disabled="true"
+                >
+                  Open Map
+                </a>
+              </div>
+            </div>
+            <div class="field full">
+              <label>Status Timeline</label>
+              <ul class="timeline" id="visit-timeline"></ul>
+            </div>
+            <div class="field full hidden" id="visit-photo-wrap">
+              <label>Photo</label>
+              <img id="visit-photo" class="visit-photo" alt="Visit photo" />
+            </div>
+          </div>
+          <div id="edit-visit-error" class="form-error hidden"></div>
+          <div class="modal-actions" id="modal-actions">
+            <button id="modal-close" type="button" class="btn ghost">Close</button>
+            <button id="save-visit" type="submit" class="btn primary">Save Changes</button>
+            <button id="delete-visit" type="button" class="btn danger">Delete Visit</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </body>
+</html>
