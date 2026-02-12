@@ -2,6 +2,16 @@ const config = window.APP_CONFIG || {};
 const supabaseUrl = config.supabaseUrl;
 const supabaseKey = config.supabaseKey;
 
+// Clear any stale Supabase auth tokens (avoids invalid/session-expired from old projects)
+Object.keys(localStorage)
+  .filter((k) => k.startsWith('sb-') && k.includes('auth-token'))
+  .forEach((k) => localStorage.removeItem(k));
+
+// Unregister any old service workers that might cache the previous domain
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.getRegistrations().then((regs) => regs.forEach((r) => r.unregister()));
+}
+
 const ui = {
   loginView: document.getElementById('login-view'),
   appView: document.getElementById('app-view'),
@@ -129,6 +139,8 @@ const loadingState = {
   }
 } else {
   const supabaseClient = window.supabase.createClient(supabaseUrl, supabaseKey);
+  const debugChannel = supabaseClient.channel('test');
+  debugChannel.subscribe((status) => console.log('realtime:', status));
 
   const showToast = (message, type = 'success') => {
     ui.toast.textContent = message;
@@ -2280,7 +2292,14 @@ const loadingState = {
     clearFormError(ui.adminCreateError);
 
     const { data: sessionData } = await supabaseClient.auth.getSession();
-    const token = sessionData?.session?.access_token;
+    if (!sessionData?.session) {
+      showFormError(ui.adminCreateError, 'Session expired. Please log in again.');
+      return;
+    }
+
+    const { data: refreshedData } = await supabaseClient.auth.refreshSession();
+    const session = refreshedData?.session || sessionData.session;
+    const token = session?.access_token;
     if (!token) {
       showFormError(ui.adminCreateError, 'Session expired. Please log in again.');
       return;
@@ -2312,14 +2331,25 @@ const loadingState = {
 
       if (!res.ok) {
         const err = await res.json().catch(() => ({}));
-        throw new Error(err.error || err.message || 'Unable to create user.');
+        const message = err.error || err.message || 'Unable to create user.';
+        if (/invalid jwt/i.test(message)) {
+          throw new Error('Invalid JWT. Please log out and log in again.');
+        }
+        throw new Error(message);
       }
 
       ui.adminCreateForm.reset();
       showToast('User created.');
       await loadUsers();
     } catch (error) {
-      showFormError(ui.adminCreateError, error.message || 'Unable to create user.');
+      const msg = error.message || 'Unable to create user.';
+      if (/invalid jwt/i.test(msg)) {
+        await supabaseClient.auth.signOut();
+        clearSession();
+        showFormError(ui.adminCreateError, 'Session expired. Please log in again.');
+        return;
+      }
+      showFormError(ui.adminCreateError, msg);
     } finally {
       setButtonLoading(ui.adminCreateSubmit, false);
     }
